@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tracking Links Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #1e1e1e;
+      color: #fff;
+      margin: 0;
+      padding: 20px;
+    }
+    h2 {
+      border-bottom: 2px solid #444;
+      padding-bottom: 5px;
+      margin-top: 30px;
+    }
+    .category {
+      margin-bottom: 30px;
+    }
+    .link-button {
+      display: inline-block;
+      width: 180px;
+      height: 100px;
+      margin: 10px;
+      background-size: cover;
+      background-position: center;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      text-align: center;
+      line-height: 100px;
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      background-color: #444;
+      position: relative;
+    }
+    .link-button span {
+      background-color: rgba(0, 0, 0, 0.6);
+      padding: 5px 10px;
+      border-radius: 5px;
+    }
+    .form-container {
+      margin-top: 40px;
+      padding: 20px;
+      background-color: #2e2e2e;
+      border-radius: 10px;
+    }
+    .form-container input, .form-container button {
+      padding: 10px;
+      margin: 5px;
+      border-radius: 5px;
+      border: none;
+    }
+    .form-container input {
+      width: 200px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Tracking Links Dashboard</h1>
+
+  <div id="links-container">
+    <div class="category" data-category="Fire">
+      <h2>Fire</h2>
+      <a href="https://app.watchduty.org/" class="link-button" style="background-image: url('https://app.watchduty.org/favicon.ico');"><span>Watch Duty</span></a>
+      <a href="https://fire.airnow.gov/#4.22/41.43/-95.19" class="link-button" style="background-image: url('https://fire.airnow.gov/images/favicon.ico');"><span>Air Now</span></a>
+      <a href="https://firms.modaps.eosdis.nasa.gov/map/#d:24hrs;@-93.9,33.3,5.3z" class="link-button" style="background-image: url('https://firms.modaps.eosdis.nasa.gov/favicon.ico');"><span>FIRMS</span></a>
+    </div>
+
+    <div class="category" data-category="Weather">
+      <h2>Weather</h2>
+      <a href="https://climeradar.com/weather-radar/it-rome-41485" class="link-button" style="background-image: url('https://climeradar.com/assets/images/favicon.png');"><span>Clime</span></a>
+      <a href="https://tornado.live/" class="link-button" style="background-image: url('https://tornado.live/favicon.ico');"><span>Tornado.Live</span></a>
+    </div>
+
+    <div class="category" data-category="AED Locator">
+      <h2>AED Locator</h2>
+      <a href="https://www.pulsepoint.org/" class="link-button" style="background-image: url('https://www.pulsepoint.org/assets/favicon/favicon.ico');"><span>Pulse Point</span></a>
+      <a href="https://openaedmap.org/en" class="link-button" style="background-image: url('https://openaedmap.org/favicon.ico');"><span>OpenAEDMap</span></a>
+    </div>
+
+    <div class="category" data-category="Tornado">
+      <h2>Tornado</h2>
+      <a href="https://www.arcgis.com/apps/dashboards/3ca8efb6f5684fc88e9761f6a26e2b5d" class="link-button" style="background-image: url('https://www.arcgis.com/favicon.ico');"><span>ArcGIS</span></a>
+    </div>
+
+    <div class="category" data-category="Ship Tracker">
+      <h2>Ship Tracker</h2>
+      <a href="https://app.maritimeoptima.com/upgrade" class="link-button" style="background-image: url('https://app.maritimeoptima.com/favicon.ico');"><span>Ship Atlas</span></a>
+    </div>
+
+    <div class="category" data-category="Lightning">
+      <h2>Lightning</h2>
+      <a href="https://www.lightningmaps.org/#m=oss;t=3;s=0;o=0;b=0.00;ts=0;d=2;dl=2;dc=0;" class="link-button" style="background-image: url('https://www.lightningmaps.org/favicon.ico');"><span>Lightning Maps</span></a>
+    </div>
+  </div>
+
+  <div class="form-container">
+    <h2>Add New Link</h2>
+    <input type="text" id="category" placeholder="Category" />
+    <input type="text" id="name" placeholder="Name" />
+    <input type="text" id="url" placeholder="URL" />
+    <input type="text" id="icon" placeholder="Favicon URL (optional)" />
+    <button onclick="addLink()">Add Link</button>
+  </div>
+
+  <script>
+    function addLink() {
+      const category = document.getElementById("category").value.trim();
+      const name = document.getElementById("name").value.trim();
+      const url = document.getElementById("url").value.trim();
+      const icon = document.getElementById("icon").value.trim() || (new URL(url)).origin + '/favicon.ico';
+
+      if (!category || !name || !url) {
+        alert("Please fill in all required fields.");
+        return;
+      }
+
+      let categoryDiv = document.querySelector(`[data-category='${category}']`);
+
+      if (!categoryDiv) {
+        categoryDiv = document.createElement("div");
+        categoryDiv.className = "category";
+        categoryDiv.setAttribute("data-category", category);
+        categoryDiv.innerHTML = `<h2>${category}</h2>`;
+        document.getElementById("links-container").appendChild(categoryDiv);
+      }
+
+      const linkHTML = `<a href="${url}" class="link-button" style="background-image: url('${icon}');"><span>${name}</span></a>`;
+      categoryDiv.innerHTML += linkHTML;
+
+      // Clear inputs
+      document.getElementById("category").value = "";
+      document.getElementById("name").value = "";
+      document.getElementById("url").value = "";
+      document.getElementById("icon").value = "";
+    }
+  </script>
+</body>
+</html>
