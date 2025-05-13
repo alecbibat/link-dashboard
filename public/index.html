@@ -93,17 +93,13 @@
         const id = await storeLink(category, name, url, icon);
         createLinkButton(id, category, name, url, icon);
       };
-      testImg.onerror = async () => {
+      testImg.onerror = () => {
   const fallback = categoryDefaults[category] || 'https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg';
-  const fallbackImg = new Image();
-  fallbackImg.onload = async () => {
-    const id = await storeLink(category, name, url, fallback);
+  storeLink(category, name, url, fallback).then(id => {
     createLinkButton(id, category, name, url, fallback);
-  };
-  fallbackImg.onerror = () => {
-    console.error('Both favicon and fallback image failed to load.');
-  };
-  fallbackImg.src = fallback;
+  }).catch(() => {
+    console.error('Failed to use fallback icon.');
+  });
 };
       };
       testImg.src = icon;
