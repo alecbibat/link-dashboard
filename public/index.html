@@ -70,36 +70,38 @@
 });
 
     window.addLink = function () {
-      const category = document.getElementById("category").value.trim();
-      const name = document.getElementById("name").value.trim();
-      const url = document.getElementById("url").value.trim();
-      let icon = document.getElementById("icon").value.trim();
+  const category = document.getElementById("category").value.trim();
+  const name = document.getElementById("name").value.trim();
+  const url = document.getElementById("url").value.trim();
+  let icon = document.getElementById("icon").value.trim();
 
-      if (!category || !name || !url) {
-        alert("Please fill in all required fields.");
-        return;
-      }
+  if (!category || !name || !url) {
+    alert("Please fill in all required fields.");
+    return;
+  }
 
-      if (!icon) {
-        try {
-          icon = (new URL(url)).origin + '/favicon.ico';
-        } catch (e) {
-          icon = "";
-        }
-      }
+  if (!icon) {
+    try {
+      icon = (new URL(url)).origin + '/favicon.ico';
+    } catch (e) {
+      icon = "";
+    }
+  }
 
-      const testImg = new Image();
-      testImg.onload = async () => {
-        const id = await storeLink(category, name, url, icon);
-        createLinkButton(id, category, name, url, icon);
-      };
-      testImg.onerror = () => {
-  const fallback = categoryDefaults[category] || 'https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg';
-  storeLink(category, name, url, fallback).then(id => {
-    createLinkButton(id, category, name, url, fallback);
-  }).catch(() => {
-    console.error('Failed to use fallback icon.');
-  });
+  const testImg = new Image();
+  testImg.onload = async () => {
+    const id = await storeLink(category, name, url, icon);
+    createLinkButton(id, category, name, url, icon);
+  };
+  testImg.onerror = () => {
+    const fallback = categoryDefaults[category] || 'https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg';
+    storeLink(category, name, url, fallback).then(id => {
+      createLinkButton(id, category, name, url, fallback);
+    }).catch(() => {
+      console.error('Failed to use fallback icon.');
+    });
+  };
+  testImg.src = icon;
 };
       };
       testImg.src = icon;
@@ -214,7 +216,7 @@
 </head>
 <body>
   <h1>Tracking Links Dashboard</h1>
-  <button id="deleteModeBtn" onclick="toggleDeleteMode()">Enter Delete Mode</button>
+  <button id="deleteModeBtn" onclick="window.toggleDeleteMode()">Enter Delete Mode</button>
 
   <div id="links-container"></div>
 
