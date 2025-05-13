@@ -34,23 +34,20 @@
 
     let deleteMode = false;
 
-async function loadLinks() {
+    async function loadLinks() {
   const snapshot = await getDocs(collection(db, "links"));
   console.log("Loaded documents:", snapshot.size);
-
   snapshot.forEach(docSnap => {
-    const data = docSnap.data();
+        const data = docSnap.data();
     console.log("Doc data:", data);
-
     const { category, name, url, icon } = data;
-    if (category && name && url && icon) {
-      createLinkButton(docSnap.id, category, name, url, icon);
-    } else {
+    if (!category || !name || !url || !icon) {
       console.warn("Skipping malformed document:", docSnap.id, data);
+      return;
     }
-  });
-}
-
+        createLinkButton(docSnap.id, category, name, url, icon);
+      });
+    }
 
     async function storeLink(category, name, url, icon) {
       const docRef = await addDoc(collection(db, "links"), { category, name, url, icon });
