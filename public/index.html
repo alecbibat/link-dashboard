@@ -7,7 +7,9 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+    import {
+      getFirestore, collection, addDoc, getDocs, deleteDoc, doc
+    } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAhGzkAZWcSKwFSIA8O2EWUk8yTH5JarXw",
@@ -32,14 +34,20 @@
 
     async function loadLinks() {
       const snapshot = await getDocs(collection(db, "links"));
-      snapshot.forEach(doc => {
-        const { category, name, url, icon } = doc.data();
-        createLinkButton(category, name, url, icon);
+      snapshot.forEach(docSnap => {
+        const { category, name, url, icon } = docSnap.data();
+        createLinkButton(docSnap.id, category, name, url, icon);
       });
     }
 
     async function storeLink(category, name, url, icon) {
-      await addDoc(collection(db, "links"), { category, name, url, icon });
+      const docRef = await addDoc(collection(db, "links"), { category, name, url, icon });
+      return docRef.id;
+    }
+
+    async function deleteLink(id, element) {
+      await deleteDoc(doc(db, "links", id));
+      element.remove();
     }
 
     window.addEventListener('DOMContentLoaded', loadLinks);
@@ -64,19 +72,19 @@
       }
 
       const testImg = new Image();
-      testImg.onload = () => {
-        storeLink(category, name, url, icon);
-        createLinkButton(category, name, url, icon);
+      testImg.onload = async () => {
+        const id = await storeLink(category, name, url, icon);
+        createLinkButton(id, category, name, url, icon);
       };
-      testImg.onerror = () => {
+      testImg.onerror = async () => {
         const fallback = categoryDefaults[category] || 'https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg';
-        storeLink(category, name, url, fallback);
-        createLinkButton(category, name, url, fallback);
+        const id = await storeLink(category, name, url, fallback);
+        createLinkButton(id, category, name, url, fallback);
       };
       testImg.src = icon;
     }
 
-    window.createLinkButton = function (category, name, url, icon) {
+    window.createLinkButton = function (id, category, name, url, icon) {
       let categoryDiv = document.querySelector(`[data-category='${category}']`);
 
       if (!categoryDiv) {
@@ -87,8 +95,16 @@
         document.getElementById("links-container").appendChild(categoryDiv);
       }
 
-      const linkHTML = `<a href="${url}" target="_blank" class="link-button" style="background-image: url('${icon}');"><span>${name}</span></a>`;
-      categoryDiv.innerHTML += linkHTML;
+      const linkContainer = document.createElement("div");
+      linkContainer.className = "link-button";
+      linkContainer.style.backgroundImage = `url('${icon}')`;
+
+      linkContainer.innerHTML = `
+        <a href="${url}" target="_blank"><span>${name}</span></a>
+        <button onclick="deleteLink('${id}', this.parentElement)" style="position:absolute;top:5px;right:5px;background:red;color:white;border:none;border-radius:4px;padding:2px 6px;cursor:pointer;">✕</button>
+      `;
+
+      categoryDiv.appendChild(linkContainer);
 
       document.getElementById("category").value = "";
       document.getElementById("name").value = "";
@@ -125,10 +141,13 @@
       text-align: center;
       line-height: 100px;
       color: white;
-      text-decoration: none;
       font-weight: bold;
       background-color: #444;
       position: relative;
+    }
+    .link-button a {
+      color: white;
+      text-decoration: none;
     }
     .link-button span {
       background-color: rgba(0, 0, 0, 0.6);
