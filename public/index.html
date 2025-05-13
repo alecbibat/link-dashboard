@@ -4,6 +4,99 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tracking Links Dashboard</title>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAhGzkAZWcSKwFSIA8O2EWUk8yTH5JarXw",
+      authDomain: "link-dashboard-fbee7.firebaseapp.com",
+      projectId: "link-dashboard-fbee7",
+      storageBucket: "link-dashboard-fbee7.firebasestorage.app",
+      messagingSenderId: "872237474804",
+      appId: "1:872237474804:web:2bebc367be02b55735cfa1"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const categoryDefaults = {
+      "Fire": "https://upload.wikimedia.org/wikipedia/commons/6/6b/Fire_icon.svg",
+      "Weather": "https://upload.wikimedia.org/wikipedia/commons/e/e2/Weather-icon-sun.svg",
+      "AED Locator": "https://upload.wikimedia.org/wikipedia/commons/f/fd/AED_icon.svg",
+      "Tornado": "https://upload.wikimedia.org/wikipedia/commons/d/dd/Tornado_icon.svg",
+      "Ship Tracker": "https://upload.wikimedia.org/wikipedia/commons/2/29/Ship_icon.svg",
+      "Lightning": "https://upload.wikimedia.org/wikipedia/commons/2/25/Lightning_icon.svg"
+    };
+
+    async function loadLinks() {
+      const snapshot = await getDocs(collection(db, "links"));
+      snapshot.forEach(doc => {
+        const { category, name, url, icon } = doc.data();
+        createLinkButton(category, name, url, icon);
+      });
+    }
+
+    async function storeLink(category, name, url, icon) {
+      await addDoc(collection(db, "links"), { category, name, url, icon });
+    }
+
+    window.addEventListener('DOMContentLoaded', loadLinks);
+
+    window.addLink = function () {
+      const category = document.getElementById("category").value.trim();
+      const name = document.getElementById("name").value.trim();
+      const url = document.getElementById("url").value.trim();
+      let icon = document.getElementById("icon").value.trim();
+
+      if (!category || !name || !url) {
+        alert("Please fill in all required fields.");
+        return;
+      }
+
+      if (!icon) {
+        try {
+          icon = (new URL(url)).origin + '/favicon.ico';
+        } catch (e) {
+          icon = "";
+        }
+      }
+
+      const testImg = new Image();
+      testImg.onload = () => {
+        storeLink(category, name, url, icon);
+        createLinkButton(category, name, url, icon);
+      };
+      testImg.onerror = () => {
+        const fallback = categoryDefaults[category] || 'https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg';
+        storeLink(category, name, url, fallback);
+        createLinkButton(category, name, url, fallback);
+      };
+      testImg.src = icon;
+    }
+
+    window.createLinkButton = function (category, name, url, icon) {
+      let categoryDiv = document.querySelector(`[data-category='${category}']`);
+
+      if (!categoryDiv) {
+        categoryDiv = document.createElement("div");
+        categoryDiv.className = "category";
+        categoryDiv.setAttribute("data-category", category);
+        categoryDiv.innerHTML = `<h2>${category}</h2>`;
+        document.getElementById("links-container").appendChild(categoryDiv);
+      }
+
+      const linkHTML = `<a href="${url}" target="_blank" class="link-button" style="background-image: url('${icon}');"><span>${name}</span></a>`;
+      categoryDiv.innerHTML += linkHTML;
+
+      document.getElementById("category").value = "";
+      document.getElementById("name").value = "";
+      document.getElementById("url").value = "";
+      document.getElementById("icon").value = "";
+    }
+  </script>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -72,66 +165,5 @@
     <input type="text" id="icon" placeholder="Favicon URL (optional)" />
     <button onclick="addLink()">Add Link</button>
   </div>
-
-  <script>
-    const categoryDefaults = {
-      "Fire": "https://upload.wikimedia.org/wikipedia/commons/6/6b/Fire_icon.svg",
-      "Weather": "https://upload.wikimedia.org/wikipedia/commons/e/e2/Weather-icon-sun.svg",
-      "AED Locator": "https://upload.wikimedia.org/wikipedia/commons/f/fd/AED_icon.svg",
-      "Tornado": "https://upload.wikimedia.org/wikipedia/commons/d/dd/Tornado_icon.svg",
-      "Ship Tracker": "https://upload.wikimedia.org/wikipedia/commons/2/29/Ship_icon.svg",
-      "Lightning": "https://upload.wikimedia.org/wikipedia/commons/2/25/Lightning_icon.svg"
-    };
-
-    function addLink() {
-      const category = document.getElementById("category").value.trim();
-      const name = document.getElementById("name").value.trim();
-      const url = document.getElementById("url").value.trim();
-      let icon = document.getElementById("icon").value.trim();
-
-      if (!category || !name || !url) {
-        alert("Please fill in all required fields.");
-        return;
-      }
-
-      if (!icon) {
-        try {
-          icon = (new URL(url)).origin + '/favicon.ico';
-        } catch (e) {
-          icon = "";
-        }
-      }
-
-      const testImg = new Image();
-      testImg.onload = () => {
-        createLinkButton(category, name, url, icon);
-      };
-      testImg.onerror = () => {
-        const fallback = categoryDefaults[category] || 'https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg';
-        createLinkButton(category, name, url, fallback);
-      };
-      testImg.src = icon;
-    }
-
-    function createLinkButton(category, name, url, icon) {
-      let categoryDiv = document.querySelector(`[data-category='${category}']`);
-
-      if (!categoryDiv) {
-        categoryDiv = document.createElement("div");
-        categoryDiv.className = "category";
-        categoryDiv.setAttribute("data-category", category);
-        categoryDiv.innerHTML = `<h2>${category}</h2>`;
-        document.getElementById("links-container").appendChild(categoryDiv);
-      }
-
-      const linkHTML = `<a href="${url}" target="_blank" class="link-button" style="background-image: url('${icon}');"><span>${name}</span></a>`;
-      categoryDiv.innerHTML += linkHTML;
-
-      document.getElementById("category").value = "";
-      document.getElementById("name").value = "";
-      document.getElementById("url").value = "";
-      document.getElementById("icon").value = "";
-    }
-  </script>
 </body>
 </html>
