@@ -47,10 +47,10 @@
       return docRef.id;
     }
 
-    async function deleteLink(id, element) {
-      await deleteDoc(doc(db, "links", id));
-      element.remove();
-    }
+    window.deleteLink = async function (id, element) {
+  await deleteDoc(doc(db, "links", id));
+  element.remove();
+};
 
     window.addEventListener('DOMContentLoaded', loadLinks);
 
