@@ -62,41 +62,7 @@
 <body>
   <h1>Tracking Links Dashboard</h1>
 
-  <div id="links-container">
-    <div class="category" data-category="Fire">
-      <h2>Fire</h2>
-      <a href="https://app.watchduty.org/" class="link-button" style="background-image: url('https://app.watchduty.org/favicon.ico');"><span>Watch Duty</span></a>
-      <a href="https://fire.airnow.gov/#4.22/41.43/-95.19" class="link-button" style="background-image: url('https://fire.airnow.gov/images/favicon.ico');"><span>Air Now</span></a>
-      <a href="https://firms.modaps.eosdis.nasa.gov/map/#d:24hrs;@-93.9,33.3,5.3z" class="link-button" style="background-image: url('https://firms.modaps.eosdis.nasa.gov/favicon.ico');"><span>FIRMS</span></a>
-    </div>
-
-    <div class="category" data-category="Weather">
-      <h2>Weather</h2>
-      <a href="https://climeradar.com/weather-radar/it-rome-41485" class="link-button" style="background-image: url('https://climeradar.com/assets/images/favicon.png');"><span>Clime</span></a>
-      <a href="https://tornado.live/" class="link-button" style="background-image: url('https://tornado.live/favicon.ico');"><span>Tornado.Live</span></a>
-    </div>
-
-    <div class="category" data-category="AED Locator">
-      <h2>AED Locator</h2>
-      <a href="https://www.pulsepoint.org/" class="link-button" style="background-image: url('https://www.pulsepoint.org/assets/favicon/favicon.ico');"><span>Pulse Point</span></a>
-      <a href="https://openaedmap.org/en" class="link-button" style="background-image: url('https://openaedmap.org/favicon.ico');"><span>OpenAEDMap</span></a>
-    </div>
-
-    <div class="category" data-category="Tornado">
-      <h2>Tornado</h2>
-      <a href="https://www.arcgis.com/apps/dashboards/3ca8efb6f5684fc88e9761f6a26e2b5d" class="link-button" style="background-image: url('https://www.arcgis.com/favicon.ico');"><span>ArcGIS</span></a>
-    </div>
-
-    <div class="category" data-category="Ship Tracker">
-      <h2>Ship Tracker</h2>
-      <a href="https://app.maritimeoptima.com/upgrade" class="link-button" style="background-image: url('https://app.maritimeoptima.com/favicon.ico');"><span>Ship Atlas</span></a>
-    </div>
-
-    <div class="category" data-category="Lightning">
-      <h2>Lightning</h2>
-      <a href="https://www.lightningmaps.org/#m=oss;t=3;s=0;o=0;b=0.00;ts=0;d=2;dl=2;dc=0;" class="link-button" style="background-image: url('https://www.lightningmaps.org/favicon.ico');"><span>Lightning Maps</span></a>
-    </div>
-  </div>
+  <div id="links-container"></div>
 
   <div class="form-container">
     <h2>Add New Link</h2>
@@ -108,17 +74,46 @@
   </div>
 
   <script>
+    const categoryDefaults = {
+      "Fire": "https://upload.wikimedia.org/wikipedia/commons/6/6b/Fire_icon.svg",
+      "Weather": "https://upload.wikimedia.org/wikipedia/commons/e/e2/Weather-icon-sun.svg",
+      "AED Locator": "https://upload.wikimedia.org/wikipedia/commons/f/fd/AED_icon.svg",
+      "Tornado": "https://upload.wikimedia.org/wikipedia/commons/d/dd/Tornado_icon.svg",
+      "Ship Tracker": "https://upload.wikimedia.org/wikipedia/commons/2/29/Ship_icon.svg",
+      "Lightning": "https://upload.wikimedia.org/wikipedia/commons/2/25/Lightning_icon.svg"
+    };
+
     function addLink() {
       const category = document.getElementById("category").value.trim();
       const name = document.getElementById("name").value.trim();
       const url = document.getElementById("url").value.trim();
-      const icon = document.getElementById("icon").value.trim() || (new URL(url)).origin + '/favicon.ico';
+      let icon = document.getElementById("icon").value.trim();
 
       if (!category || !name || !url) {
         alert("Please fill in all required fields.");
         return;
       }
 
+      if (!icon) {
+        try {
+          icon = (new URL(url)).origin + '/favicon.ico';
+        } catch (e) {
+          icon = "";
+        }
+      }
+
+      const testImg = new Image();
+      testImg.onload = () => {
+        createLinkButton(category, name, url, icon);
+      };
+      testImg.onerror = () => {
+        const fallback = categoryDefaults[category] || 'https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg';
+        createLinkButton(category, name, url, fallback);
+      };
+      testImg.src = icon;
+    }
+
+    function createLinkButton(category, name, url, icon) {
       let categoryDiv = document.querySelector(`[data-category='${category}']`);
 
       if (!categoryDiv) {
@@ -129,10 +124,9 @@
         document.getElementById("links-container").appendChild(categoryDiv);
       }
 
-      const linkHTML = `<a href="${url}" class="link-button" style="background-image: url('${icon}');"><span>${name}</span></a>`;
+      const linkHTML = `<a href="${url}" target="_blank" class="link-button" style="background-image: url('${icon}');"><span>${name}</span></a>`;
       categoryDiv.innerHTML += linkHTML;
 
-      // Clear inputs
       document.getElementById("category").value = "";
       document.getElementById("name").value = "";
       document.getElementById("url").value = "";
