@@ -35,16 +35,16 @@
     let deleteMode = false;
 
     async function loadLinks() {
-  const snapshot = await getDocs(collection(db, "links"));
-  console.log("Loaded documents:", snapshot.size);
-  snapshot.forEach(docSnap => {
+      const snapshot = await getDocs(collection(db, "links"));
+      console.log("Loaded documents:", snapshot.size);
+      snapshot.forEach(docSnap => {
         const data = docSnap.data();
-    console.log("Doc data:", data);
-    const { category, name, url, icon } = data;
-    if (!category || !name || !url || !icon) {
-      console.warn("Skipping malformed document:", docSnap.id, data);
-      return;
-    }
+        console.log("Doc data:", data);
+        const { category, name, url, icon } = data;
+        if (!category || !name || !url || !icon) {
+          console.warn("Skipping malformed document:", docSnap.id, data);
+          return;
+        }
         createLinkButton(docSnap.id, category, name, url, icon);
       });
     }
@@ -55,57 +55,54 @@
     }
 
     window.deleteLink = async function (id, element) {
-  await deleteDoc(doc(db, "links", id));
-  element.remove();
-};
+      await deleteDoc(doc(db, "links", id));
+      element.remove();
+    };
 
     window.addEventListener('DOMContentLoaded', async () => {
-  try {
-    await loadLinks();
-  } catch (e) {
-    console.error("Failed to load links from Firestore:", e);
-    const container = document.getElementById("links-container");
-    container.innerHTML = '<p style="color:red">Failed to load links. Please check your connection or Firestore rules.</p>';
-  }
-});
+      try {
+        await loadLinks();
+      } catch (e) {
+        console.error("Failed to load links from Firestore:", e);
+        const container = document.getElementById("links-container");
+        container.innerHTML = '<p style="color:red">Failed to load links. Please check your connection or Firestore rules.</p>';
+      }
+    });
 
     window.addLink = function () {
-  const category = document.getElementById("category").value.trim();
-  const name = document.getElementById("name").value.trim();
-  const url = document.getElementById("url").value.trim();
-  let icon = document.getElementById("icon").value.trim();
+      const category = document.getElementById("category").value.trim();
+      const name = document.getElementById("name").value.trim();
+      const url = document.getElementById("url").value.trim();
+      let icon = document.getElementById("icon").value.trim();
 
-  if (!category || !name || !url) {
-    alert("Please fill in all required fields.");
-    return;
-  }
+      if (!category || !name || !url) {
+        alert("Please fill in all required fields.");
+        return;
+      }
 
-  if (!icon) {
-    try {
-      icon = (new URL(url)).origin + '/favicon.ico';
-    } catch (e) {
-      icon = "";
-    }
-  }
+      if (!icon) {
+        try {
+          icon = (new URL(url)).origin + '/favicon.ico';
+        } catch (e) {
+          icon = "";
+        }
+      }
 
-  const testImg = new Image();
-  testImg.onload = async () => {
-    const id = await storeLink(category, name, url, icon);
-    createLinkButton(id, category, name, url, icon);
-  };
-  testImg.onerror = () => {
-    const fallback = categoryDefaults[category] || 'https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg';
-    storeLink(category, name, url, fallback).then(id => {
-      createLinkButton(id, category, name, url, fallback);
-    }).catch(() => {
-      console.error('Failed to use fallback icon.');
-    });
-  };
-  testImg.src = icon;
-};
+      const testImg = new Image();
+      testImg.onload = async () => {
+        const id = await storeLink(category, name, url, icon);
+        createLinkButton(id, category, name, url, icon);
+      };
+      testImg.onerror = () => {
+        const fallback = categoryDefaults[category] || 'https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg';
+        storeLink(category, name, url, fallback).then(id => {
+          createLinkButton(id, category, name, url, fallback);
+        }).catch(() => {
+          console.error('Failed to use fallback icon.');
+        });
       };
       testImg.src = icon;
-    }
+    };
 
     window.createLinkButton = function (id, category, name, url, icon) {
       let categoryDiv = document.querySelector(`[data-category='${category}']`);
