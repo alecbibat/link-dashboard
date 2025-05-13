@@ -52,7 +52,15 @@
   element.remove();
 };
 
-    window.addEventListener('DOMContentLoaded', loadLinks);
+    window.addEventListener('DOMContentLoaded', async () => {
+  try {
+    await loadLinks();
+  } catch (e) {
+    console.error("Failed to load links from Firestore:", e);
+    const container = document.getElementById("links-container");
+    container.innerHTML = '<p style="color:red">Failed to load links. Please check your connection or Firestore rules.</p>';
+  }
+});
 
     window.addLink = function () {
       const category = document.getElementById("category").value.trim();
